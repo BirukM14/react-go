@@ -1,0 +1,8 @@
+root = "."  # The root directory of the project
+tmp_dir = "tmp"  # Temporary directory for storing Air's temporary files
+
+[build]  # Build configuration
+bin = "tmp/main"  # The compiled binary output
+cmd = "go build -o {{.Output}} {{.Input}}"  # Build command
+exclude = ["tmp/*"]  # Excluding only the tmp folder
+include = ["**/*.go"]  # Monitor all Go files
