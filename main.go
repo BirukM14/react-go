@@ -9,8 +9,12 @@ import (
 
 func main() {
 	fmt.Println("hello bura")
+
 	app := fiber.New()
 
-	log.Fatal(app.Listen(":4000"))
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(fiber.Map{"msg": "hello world"})
+	})
 
+	log.Fatal(app.Listen(":4000"))
 }
