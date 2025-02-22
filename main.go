@@ -15,7 +15,7 @@ import (
 )
 
 type Todo struct {
-	ID        primitive.ObjectID    `json:"id" bson:"_id"`
+	ID        primitive.ObjectID    `json:"id, omitempty" bson:"_id"`
 	Completed bool   `json:"completed"`
 	Body      string `json:"body"`
 }
@@ -63,6 +63,9 @@ func main() {
 
 	app.Get("/api/todos", getTodos)
 	app.Post("/api/todos", createTodo) // Register createTodo route
+	app.Patch("/api/todos/:id", updateTodo)
+	app.Patch("/api/todos/:id", deleteTodo)
+
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -110,4 +113,49 @@ func createTodo(c *fiber.Ctx) error {
 	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
 
 	return c.Status(201).JSON(todo)
+}
+func updateTodo(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	// Convert string ID to MongoDB ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid todo ID"})
+	}
+
+	// Define filter to find the document
+	filter := bson.M{"_id": objectID}
+
+	// Define update operation
+	update := bson.M{"$set": bson.M{"completed": true}}
+
+	// Perform update operation
+	_, err = collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update todo"})
+	}
+
+	return c.Status(200).JSON(fiber.Map{"success": "true"})
+}
+func deleteTodo(c *fiber.Ctx) error {
+	// Get the ID from params
+	id := c.Params("id")
+
+	// Convert string ID to MongoDB ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid todo ID"})
+	}
+
+	// Define the filter for deletion
+	filter := bson.M{"_id": objectID}
+
+	// Delete the document
+	_, err = collection.DeleteOne(context.Background(), filter)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to delete todo"})
+	}
+
+	// Return success response
+	return c.Status(200).JSON(fiber.Map{"success": true})
 }
