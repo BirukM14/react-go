@@ -21,8 +21,8 @@ func main() {
 	todos := []Todo{}
 
 	// Basic route
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(fiber.Map{"msg": "hello world"})
+	app.Get("/api/todos", func(c *fiber.Ctx) error {
+		return c.Status(200).JSON(todos)
 	})
 
 	// POST route to add a todo
@@ -31,7 +31,7 @@ func main() {
 
 		// Parse request body into Todo struct
 		if err := c.BodyParser(todo); err != nil {
-			return err
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
 		}
 
 		// Validate that Body is not empty
@@ -47,6 +47,47 @@ func main() {
 
 		// Return the newly created todo
 		return c.Status(201).JSON(todo)
+	})
+
+	// PATCH route to update a todo
+	app.Patch("/api/todos/:id", func(c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		var updateData struct {
+			Body *string `json:"body"`
+		}
+
+		if err := c.BodyParser(&updateData); err != nil {
+			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
+		}
+
+		for i, todo := range todos {
+			if fmt.Sprint(todo.ID) == id {
+				if updateData.Body != nil {
+					todos[i].Body = *updateData.Body
+				}
+				todos[i].Completed = true
+				return c.Status(200).JSON(todos[i])
+			}
+		}
+		return c.Status(404).JSON(fiber.Map{"error": "todo not found"})
+	})
+
+
+	app.Delete("api/todos/:id", func (c *fiber.Ctx) error {
+		id := c.Params("id")
+
+		for i, todo := range todos{
+			if fmt.Sprint(todo.ID) == id {
+
+				todos= append(todos[:i],todos[i+1:]...)
+				return c.Status(200).JSON(fiber.Map{"sucess":"true"})
+
+			}
+		} 
+		return c.Status(404).JSON(fiber.Map{"error":"todo not found"})
+		
+		
 	})
 
 	// Start the Fiber server
