@@ -1,104 +1,53 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Todo struct {
-	ID        int    `json:"id"`
+	ID        int    `json:"id" bson:"_id"`
 	Completed bool   `json:"completed"`
 	Body      string `json:"body"`
 }
 
+var collection *mongo.Collection
+
 func main() {
-	fmt.Println("hello bura")
+	fmt.Println("Hello")
 
-	app := fiber.New()
-
+	// Load environment variables
 	err := godotenv.Load(".env")
-	if err != nil{
-		log.Fatal("error in loading env file")
+	if err != nil {
+		log.Fatal("Error loading .env file:", err)
 	}
 
-	PORT := os.Getenv("PORT")
+	// Get MongoDB URI
+	MONGOURI := os.Getenv("MONGOURI")
+	if MONGOURI == "" {
+		log.Fatal("MONGOURI is not set in .env file")
+	}
 
-	todos := []Todo{}
+	// Set MongoDB client options
+	clientOptions := options.Client().ApplyURI(MONGOURI)
 
-	// Basic route
-	app.Get("/api/todos", func(c *fiber.Ctx) error {
-		return c.Status(200).JSON(todos)
-	})
+	// Connect to MongoDB
+	client, err := mongo.Connect(context.Background(), clientOptions)
+	if err != nil {
+		log.Fatal("Error connecting to MongoDB:", err)    
+	}
 
-	// POST route to add a todo
-	app.Post("/api/todos", func(c *fiber.Ctx) error {
-		todo := &Todo{}
+	// Ping MongoDB
+	err = client.Ping(context.Background(), nil)
+	if err != nil {
+		log.Fatal("Could not connect to MongoDB:", err)
+	}
 
-		// Parse request body into Todo struct
-		if err := c.BodyParser(todo); err != nil {
-			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
-		}
-
-		// Validate that Body is not empty
-		if todo.Body == "" {
-			return c.Status(400).JSON(fiber.Map{"error": "todo body is required"})
-		}
-
-		// Assign an ID based on the current length of the todos slice
-		todo.ID = len(todos) + 1
-
-		// Append the new todo to the slice
-		todos = append(todos, *todo)
-
-		// Return the newly created todo
-		return c.Status(201).JSON(todo)
-	})
-
-	// PATCH route to update a todo
-	app.Patch("/api/todos/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
-
-		var updateData struct {
-			Body *string `json:"body"`
-		}
-
-		if err := c.BodyParser(&updateData); err != nil {
-			return c.Status(400).JSON(fiber.Map{"error": "Invalid request body"})
-		}
-
-		for i, todo := range todos {
-			if fmt.Sprint(todo.ID) == id {
-				if updateData.Body != nil {
-					todos[i].Body = *updateData.Body
-				}
-				todos[i].Completed = true
-				return c.Status(200).JSON(todos[i])
-			}
-		}
-		return c.Status(404).JSON(fiber.Map{"error": "todo not found"})
-	})
-
-
-	app.Delete("api/todos/:id", func (c *fiber.Ctx) error {
-		id := c.Params("id")
-
-		for i, todo := range todos{
-			if fmt.Sprint(todo.ID) == id {
-
-				todos= append(todos[:i],todos[i+1:]...)
-				return c.Status(200).JSON(fiber.Map{"sucess":"true"})
-
-			}
-		} 
-		return c.Status(404).JSON(fiber.Map{"error":"todo not found"})
-		
-		
-	})
-
-	// Start the Fiber server
-	log.Fatal(app.Listen(":"+ PORT))
+	fmt.Println("Connected to MongoDB Atlas")
 }
