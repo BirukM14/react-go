@@ -107,8 +107,7 @@ func createTodo(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to create todo"})
 	}
 
-	return c.Status(201).JSON(fiber.Map{
-		"message": "Todo created successfully",
-		"id":      insertResult.InsertedID,
-	})
+	todo.ID = insertResult.InsertedID.(primitive.ObjectID)
+
+	return c.Status(201).JSON(todo)
 }
