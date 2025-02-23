@@ -1,21 +1,22 @@
-import { Container, Stack } from '@chakra-ui/react'
+import { Box, Container, Stack } from '@chakra-ui/react'
+import { useColorModeValue } from './components/ui/color-mode'
 import './App.css'
 import Navbar from './components/ui/Navbar'
+
 function App() {
-
   return (
-    <Stack h= "100vh">
-     <Navbar/>
-     <Container>
-      {/* <TodoForm/>
-      <TodoForm/> */}
-
-     </Container>
-     
-    </Stack>
-
-    
-  )
+    // Full-screen box with dynamic background
+    <Box 
+      bg={useColorModeValue("white", "gray.900")} 
+      minH="100vh" // Ensures full height
+      w="100vw"    // Ensures full width
+      display="flex"
+      flexDirection="column"
+    >
+      <Navbar />
+      {/* Other components go here */}
+    </Box>
+  );
 }
 
-export default App
+export default App;
