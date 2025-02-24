@@ -4,6 +4,7 @@ import Navbar from "./components/ui/Navbar";
 import TodoForm from "./components/ui/TodoForm";
 import TodoList from "./components/ui/TodoList";
 
+export const BASE_URL ="http://localhost:5000/api"
 function App() {
   return (
     // Outer Flex container to center the Box
