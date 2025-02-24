@@ -1,6 +1,5 @@
 import { Box } from '@chakra-ui/react'
 import { useColorModeValue } from './components/ui/color-mode'
-import './App.css'
 import Navbar from './components/ui/Navbar'
 import TodoForm from './components/ui/TodoForm'                                 
 import TodoList from './components/ui/TodoList'

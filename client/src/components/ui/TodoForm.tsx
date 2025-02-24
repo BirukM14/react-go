@@ -1,31 +1,35 @@
-
-
-
-
 import { Button, Flex, Input, Spinner } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { IoMdAdd } from "react-icons/io";
 
 const TodoForm = () => {
 	const [newTodo, setNewTodo] = useState("");
 	const [isPending, setIsPending] = useState(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+
+	useEffect(() => {
+		if (inputRef.current) {
+			inputRef.current.focus();
+		}
+	}, []);
 
 	const createTodo = async (e: React.FormEvent) => {
 		e.preventDefault();
 		alert("Todo added!");
 	};
+
 	return (
 		<form onSubmit={createTodo}>
 			<Flex gap={2}>
 				<Input
-					type='text'
+					type="text"
 					value={newTodo}
 					onChange={(e) => setNewTodo(e.target.value)}
-					ref={(input) => input && input.focus()}
+					ref={inputRef} // ✅ Correct way to use ref
 				/>
 				<Button
 					mx={2}
-					type='submit'
+					type="submit"
 					_active={{
 						transform: "scale(.97)",
 					}}
@@ -36,4 +40,5 @@ const TodoForm = () => {
 		</form>
 	);
 };
+
 export default TodoForm;
