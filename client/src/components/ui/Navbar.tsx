@@ -7,7 +7,7 @@ export default function Navbar() {
 	const { colorMode, toggleColorMode } = useColorMode();
 
 	return (
-		<Container maxW={"900px"}>
+		<Container maxW={"900px"} >
 			<Box bg={useColorModeValue("gray.400", "gray.700")} px={4} my={4} borderRadius={"5"}>
 				<Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
 					{/* LEFT SIDE */}
